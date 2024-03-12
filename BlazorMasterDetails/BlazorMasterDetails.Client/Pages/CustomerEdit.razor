@@ -1,0 +1,124 @@
+﻿@page "/edit/{cusId:int}"
+@rendermode InteractiveWebAssembly
+@inject CustomerSevice service
+@inject NavigationManager nav
+@inject IJSRuntime JS
+
+
+<EditForm Model="model" OnValidSubmit="SaveData">
+	<DataAnnotationsValidator />
+	<ValidationSummary />
+	<div>
+		<label for="name">Name:</label>
+		<InputText id="name" class="form-control" required @bind-Value="model.Name" />
+		<ValidationMessage For="()=> model.Name" />
+	</div>
+	<div>
+		<label for="isNew">isNew?</label>
+		<InputCheckbox @bind-Value="model.IsNew" />
+		<ValidationMessage For="()=> model.IsNew" />
+	</div>
+
+	<table class="table table-active table-bordered table-hover">
+		<tr>
+			<th>Invoice Number</th>
+			<th>Invoice Date</th>
+			<th>Standard Cost</th>
+			<th>
+				<button type="button" class="btn btn-outline-info" @onclick="AddInvoice">Add Invoice</button>
+			</th>
+		</tr>
+		@foreach (var inv in model.Invoices)
+		{
+			<tr>
+				<td>
+
+					<InputText class="form-control" @bind-Value="inv.InvoiceNumber" />
+					<ValidationMessage For="()=> inv.InvoiceNumber" />
+				</td>
+				<td>
+					<InputDate class="form-control" @bind-Value="inv.InvoiceDate" />
+					<ValidationMessage For="()=> inv.InvoiceDate" />
+				</td>
+				<td>
+					<InputNumber class="form-control" @bind-Value="inv.StandardCost" />
+					<ValidationMessage For="()=> inv.StandardCost" />
+				</td>
+
+				
+				<td>
+					<button type="button" class="btn btn-outline-warning" @onclick="()=> DeleteInvoice(inv)">Delete</button>
+				</td>
+			</tr>
+
+
+		}
+	</table>
+
+	<button type="submit" class="btn btn-outline-success">
+		Save
+	</button>
+	<button type="button" class="btn btn-outline-danger" @onclick="DataDelete">
+		Delete
+	</button>
+	<NavLink class="btn btn-outline-info" href="Customers">
+		Cancel
+	</NavLink>
+</EditForm>
+
+@code {
+
+
+
+
+	[Parameter]
+	public int cusId { get; set; }
+
+
+	private Customer model = new Customer();
+
+
+	
+	protected override async Task OnInitializedAsync()
+	{
+		this.model = await this.service.GetById(cusId);
+
+		await base.OnInitializedAsync();
+	}
+
+
+	public async Task SaveData()
+	{
+		var response = await service.Update(model);
+
+		if (response.IsSuccessStatusCode)
+		{
+			nav.NavigateTo("/Customers");
+		}
+
+
+	}
+
+	void AddInvoice()
+	{
+		model.Invoices?.Add(new Invoice());
+	}
+	void DeleteInvoice(Invoice item)
+	{
+		model.Invoices?.Remove(item);
+
+	}
+
+	async Task DataDelete()
+	{
+		var response = await service.Delete(cusId);
+
+		if (response.IsSuccessStatusCode)
+		{
+			nav.NavigateTo("/Customers");
+		}
+
+	}
+
+
+}

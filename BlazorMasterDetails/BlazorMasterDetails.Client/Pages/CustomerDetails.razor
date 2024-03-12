@@ -1,0 +1,58 @@
+﻿@page "/details/{cusId:int}"
+@rendermode InteractiveWebAssembly
+@inject CustomerSevice service
+@inject NavigationManager nav
+@inject IJSRuntime JS
+
+
+<h3>CustomerDetails</h3>
+<div>
+	<label for="name"><strong> Name:</strong></label>	<span><i>@model.Name</i></span>
+</div>
+<div>
+	<label for="isNew"><strong>isNew?</strong></label>	<InputCheckbox @bind-Value="model.IsNew" disabled/>
+</div>
+<hr />
+<table class="table table-active table-bordered table-hover">
+	<tr>
+		<th>Invoice Number</th>
+		<th>Invoice Date</th>
+		<th>Standard Cost</th>
+	</tr>
+	@foreach (var inv in model.Invoices)
+	{
+		<tr>
+			<td>
+				<span>@inv.InvoiceNumber</span>
+			</td>
+			<td>
+				<span>@inv.InvoiceDate</span>
+
+			</td>
+			<td>
+				<span>@inv.StandardCost</span>
+			</td>
+		</tr>
+
+
+	}
+</table>
+<a class="nav-link btn btn-outline-success" href="/edit/@model.CustomerID">Edit</a>
+<a class="btn btn-outline-info" href="Customers">
+	Cancel
+</a>
+@code {
+    [Parameter]
+	public int cusId { get; set; }
+
+
+	private Customer model = new Customer();
+
+
+	protected override async Task OnInitializedAsync()
+	{
+		this.model = await this.service.GetById(cusId);
+
+		await base.OnInitializedAsync();
+	}
+}
